@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+    <parameters>
+        <parameter key="appname" type="string">TestAutoAuto</parameter>
+        <parameter key="version" type="string">0.1-alpha</parameter>
+        <parameter key="selenium-server" type="string">http://localhost:4444/wd/hub</parameter>
+        <parameter key="selenium-timeout" type="string">5000</parameter>
+    </parameters>
+    <services>
+        <service id="application" class="Symfony\Component\Console\Application">
+            <argument>%appname%</argument>
+            <argument>%version%</argument>
+            <call method="add">
+                <argument id="command.find" type="service"/>
+            </call>
+            <call method="add">
+                <argument id="command.generate" type="service"/>
+            </call>
+        </service>
+
+        <service id="command.find" class="TestAutoAuto\Command\FindInteractiveElements">
+            <argument type="string">find</argument>
+            <argument id="factory.webdriver" type="service" />
+            <argument id="finder.composite" type="service" />
+        </service>
+
+        <service id="command.generate" class="TestAutoAuto\Command\GenerateTests">
+            <argument type="string">generate</argument>
+            <argument id="factory.webdriver" type="service" />
+            <argument id="finder.composite" type="service" />
+            <argument id="investigator.capabilities" type="service" />
+        </service>
+
+        <service id="factory.webdriver" class="TestAutoAuto\WebDriver\WebdriverFactory">
+            <argument>%selenium-server%</argument>
+            <argument>%selenium-timeout%</argument>
+        </service>
+
+        <service id="finder.link" class="TestAutoAuto\InteractiveElementFinder\LinkFinder" />
+
+        <service id="finder.button" class="TestAutoAuto\InteractiveElementFinder\ButtonFinder" />
+
+        <service id="finder.input" class="TestAutoAuto\InteractiveElementFinder\InputFinder" />
+
+        <service id="finder.composite" class="TestAutoAuto\InteractiveElementFinder\CompositeInteractiveElementFinder">
+            <call method="addFinder">
+                <argument id="finder.link" type="service" />
+            </call>
+            <call method="addFinder">
+                <argument id="finder.button" type="service" />
+            </call>
+            <call method="addFinder">
+                <argument id="finder.input" type="service" />
+            </call>
+        </service>
+
+        <service id="investigator.clickable" class="TestAutoAuto\Helper\ClickableInvestigator" />
+
+        <service id="investigator.capabilities" class="TestAutoAuto\Helper\CapabilityInvestigator">
+            <call method="addInvestigator">
+                <argument id="investigator.clickable" type="service" />
+            </call>
+        </service>
+
+
+    </services>
+</container>
